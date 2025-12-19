@@ -69,8 +69,26 @@ function setGalleryIndex(i) {
   galleryIndex = (i + galleryItems.length) % galleryItems.length;
   const item = galleryItems[galleryIndex];
   if (galleryMainImg) {
-    galleryMainImg.src = item.src;
-    galleryMainImg.alt = item.alt;
+    const container = galleryMainImg.closest(".img--product");
+    if (container) container.classList.add("is-swapping");
+
+    const applySrc = () => {
+      galleryMainImg.src = item.src;
+      galleryMainImg.alt = item.alt;
+    };
+
+    // If the image is cached, load may fire synchronously in some browsers.
+    galleryMainImg.onload = () => {
+      if (container) container.classList.remove("is-swapping");
+    };
+
+    // Allow the fade-out to start before swapping the src.
+    window.setTimeout(applySrc, 40);
+
+    // Safety: ensure we don't get stuck faded out if onload doesn't fire.
+    window.setTimeout(() => {
+      if (container) container.classList.remove("is-swapping");
+    }, 450);
   }
   renderGalleryControls();
 }
@@ -91,6 +109,16 @@ setGalleryIndex(0);
 const optionsForm = document.getElementById("optionsForm");
 const addToCart = document.getElementById("addToCart");
 const variantText = document.getElementById("variantText");
+
+function syncFragranceCardSelection() {
+  if (!optionsForm) return;
+  const cards = Array.from(optionsForm.querySelectorAll(".radio-card"));
+  cards.forEach((card) => {
+    const input = card.querySelector('input[type="radio"][name="fragrance"]');
+    const checked = Boolean(input && input.checked);
+    card.classList.toggle("is-selected", checked);
+  });
+}
 
 function getSelectedValue(name) {
   const el = optionsForm?.querySelector(`input[name=\"${name}\"]:checked`);
@@ -119,6 +147,8 @@ function updateAddToCartLink() {
     const key = panel.getAttribute("data-expand");
     panel.classList.toggle("is-open", key === purchase);
   });
+
+  syncFragranceCardSelection();
 }
 
 optionsForm?.addEventListener("change", updateAddToCartLink);
