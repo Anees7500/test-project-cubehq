@@ -1,230 +1,310 @@
-const navToggle = document.getElementById("navToggle");
-const navMenu = document.getElementById("navMenu");
+// Mobile Menu Toggle
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mainNav = document.getElementById('mainNav');
 
-function setNavOpen(isOpen) {
-  navToggle?.setAttribute("aria-expanded", String(isOpen));
-  navMenu?.classList.toggle("is-open", isOpen);
+if (mobileMenuBtn && mainNav) {
+    mobileMenuBtn.addEventListener('click', () => {
+        mainNav.classList.toggle('active');
+        mobileMenuBtn.classList.toggle('active');
+    });
 }
 
-navToggle?.addEventListener("click", () => {
-  const expanded = navToggle.getAttribute("aria-expanded") === "true";
-  setNavOpen(!expanded);
-});
+// Gallery Carousel Functionality
+const mainImage = document.getElementById('mainImage');
+const thumbnails = document.querySelectorAll('.thumbnail');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const dots = document.querySelectorAll('.dot');
 
-document.addEventListener("click", (e) => {
-  if (!navMenu || !navToggle) return;
-  const target = e.target;
-  const clickedInside = navMenu.contains(target) || navToggle.contains(target);
-  if (!clickedInside) setNavOpen(false);
-});
+let currentIndex = 0;
+const totalImages = thumbnails.length;
 
-navMenu?.addEventListener("click", (e) => {
-  const t = e.target;
-  if (t && t.matches("a")) setNavOpen(false);
-});
-
-// Gallery
-const galleryMainImg = document.getElementById("galleryMainImg");
-const galleryDots = document.getElementById("galleryDots");
-const galleryThumbs = document.getElementById("galleryThumbs");
-
-const galleryItems = [
-  { label: "Bottle 1", src: "assets/images/product-01.png", alt: "GTG perfume bottle - view 1" },
-  { label: "Bottle 2", src: "assets/images/product-02.jpg", alt: "GTG perfume bottle - view 2" },
-  { label: "Bottle 3", src: "assets/images/product-03.jpg", alt: "GTG perfume bottle - view 3" },
-  { label: "Bottle 4", src: "assets/images/product-04.jpg", alt: "GTG perfume bottle - view 4" },
-  { label: "Bottle 5", src: "assets/images/product-05.jpg", alt: "GTG perfume bottle - view 5" },
+// Image sources array
+const imageSources = [
+    'assets/images/product-01.jpg',
+    'assets/images/product-02.jpg',
+    'assets/images/product-03.jpg',
+    'assets/images/product-04.jpg',
+    'assets/images/product-01.jpg',
+    'assets/images/product-02.jpg',
+    'assets/images/product-03.jpg',
+    'assets/images/product-04.jpg'
 ];
 
-let galleryIndex = 0;
-
-function renderGalleryControls() {
-  if (galleryDots) {
-    galleryDots.innerHTML = "";
-    galleryItems.forEach((_, i) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "dot" + (i === galleryIndex ? " is-active" : "");
-      btn.setAttribute("aria-label", `Go to image ${i + 1}`);
-      btn.addEventListener("click", () => setGalleryIndex(i));
-      galleryDots.appendChild(btn);
+// Update gallery display
+function updateGallery(index) {
+    // Ensure index is within bounds
+    if (index < 0) index = totalImages - 1;
+    if (index >= totalImages) index = 0;
+    
+    currentIndex = index;
+    
+    // Update main image with fade effect
+    if (mainImage) {
+        mainImage.style.opacity = '0';
+        setTimeout(() => {
+            mainImage.src = imageSources[index];
+            mainImage.style.opacity = '1';
+        }, 150);
+    }
+    
+    // Update thumbnails
+    thumbnails.forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === index);
     });
-  }
-
-  if (galleryThumbs) {
-    galleryThumbs.innerHTML = "";
-    galleryItems.forEach((item, i) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "thumb" + (i === galleryIndex ? " is-active" : "");
-      btn.setAttribute("aria-label", `Select thumbnail ${i + 1}`);
-      btn.textContent = item.label;
-      btn.addEventListener("click", () => setGalleryIndex(i));
-      galleryThumbs.appendChild(btn);
+    
+    // Update dots (only 4 dots for visual, cycle through images)
+    const dotIndex = index % 4;
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === dotIndex);
     });
-  }
 }
 
-function setGalleryIndex(i) {
-  galleryIndex = (i + galleryItems.length) % galleryItems.length;
-  const item = galleryItems[galleryIndex];
-  if (galleryMainImg) {
-    const container = galleryMainImg.closest(".img--product");
-    if (container) container.classList.add("is-swapping");
-
-    const applySrc = () => {
-      galleryMainImg.src = item.src;
-      galleryMainImg.alt = item.alt;
-    };
-
-    // If the image is cached, load may fire synchronously in some browsers.
-    galleryMainImg.onload = () => {
-      if (container) container.classList.remove("is-swapping");
-    };
-
-    // Allow the fade-out to start before swapping the src.
-    window.setTimeout(applySrc, 40);
-
-    // Safety: ensure we don't get stuck faded out if onload doesn't fire.
-    window.setTimeout(() => {
-      if (container) container.classList.remove("is-swapping");
-    }, 450);
-  }
-  renderGalleryControls();
+// Previous button
+if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+        updateGallery(currentIndex - 1);
+    });
 }
 
-document.querySelector("[data-gallery-prev]")?.addEventListener("click", () => setGalleryIndex(galleryIndex - 1));
-document.querySelector("[data-gallery-next]")?.addEventListener("click", () => setGalleryIndex(galleryIndex + 1));
+// Next button
+if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+        updateGallery(currentIndex + 1);
+    });
+}
 
-// keyboard support for gallery
-window.addEventListener("keydown", (e) => {
-  if (!galleryMainImg) return;
-  if (e.key === "ArrowLeft") setGalleryIndex(galleryIndex - 1);
-  if (e.key === "ArrowRight") setGalleryIndex(galleryIndex + 1);
+// Thumbnail clicks
+thumbnails.forEach((thumb, index) => {
+    thumb.addEventListener('click', () => {
+        updateGallery(index);
+    });
 });
 
-setGalleryIndex(0);
-
-// Option logic: 2 radio groups -> 9 variations
-const optionsForm = document.getElementById("optionsForm");
-const addToCart = document.getElementById("addToCart");
-const variantText = document.getElementById("variantText");
-
-function syncFragranceCardSelection() {
-  if (!optionsForm) return;
-  const cards = Array.from(optionsForm.querySelectorAll(".radio-card"));
-  cards.forEach((card) => {
-    const input = card.querySelector('input[type="radio"][name="fragrance"]');
-    const checked = Boolean(input && input.checked);
-    card.classList.toggle("is-selected", checked);
-  });
-}
-
-function getSelectedValue(name) {
-  const el = optionsForm?.querySelector(`input[name=\"${name}\"]:checked`);
-  return el ? el.value : "";
-}
-
-function updateAddToCartLink() {
-  if (!addToCart) return;
-
-  const fragrance = getSelectedValue("fragrance");
-  const purchase = getSelectedValue("purchase");
-
-  const base = addToCart.getAttribute("data-base-url") || "https://example.com/cart";
-  const url = new URL(base);
-  url.searchParams.set("fragrance", fragrance);
-  url.searchParams.set("purchase", purchase);
-
-  addToCart.href = url.toString();
-
-  if (variantText) {
-    variantText.textContent = `Selected: ${fragrance || "-"} + ${purchase || "-"}`;
-  }
-
-  // Expand panels based on purchase type
-  document.querySelectorAll(".expand[data-expand]").forEach((panel) => {
-    const key = panel.getAttribute("data-expand");
-    panel.classList.toggle("is-open", key === purchase);
-  });
-
-  syncFragranceCardSelection();
-}
-
-optionsForm?.addEventListener("change", updateAddToCartLink);
-updateAddToCartLink();
-
-// Accordion (collection)
-const accordion = document.getElementById("accordion");
-if (accordion) {
-  const items = Array.from(accordion.querySelectorAll(".accordion__item"));
-  const panels = Array.from(accordion.querySelectorAll(".accordion__panel"));
-
-  function setAccordionOpen(index) {
-    items.forEach((btn, i) => btn.setAttribute("aria-expanded", String(i === index)));
-    panels.forEach((p, i) => p.classList.toggle("is-open", i === index));
-  }
-
-  items.forEach((btn, index) => {
-    btn.addEventListener("click", () => {
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      setAccordionOpen(expanded ? -1 : index);
+// Dot clicks
+dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+        updateGallery(index);
     });
-  });
+});
 
-  // Ensure exactly first is open by default
-  setAccordionOpen(0);
-}
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+        updateGallery(currentIndex - 1);
+    } else if (e.key === 'ArrowRight') {
+        updateGallery(currentIndex + 1);
+    }
+});
 
-// Count up stats when section is visible
-function animateCount(el, target) {
-  const duration = 900;
-  const start = performance.now();
+// Initialize
+updateGallery(0);
 
-  function tick(now) {
-    const p = Math.min(1, (now - start) / duration);
-    const value = Math.floor(p * target);
-    el.textContent = String(value) + "%";
-    if (p < 1) requestAnimationFrame(tick);
-  }
+// Color Swatches
+const swatches = document.querySelectorAll('.swatch');
 
-  requestAnimationFrame(tick);
-}
+swatches.forEach(swatch => {
+    swatch.addEventListener('click', () => {
+        swatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+    });
+});
 
-const statsBand = document.getElementById("statsBand");
-if (statsBand) {
-  const nums = Array.from(statsBand.querySelectorAll("[data-count]"));
-  const started = new WeakSet();
+// Subscription Toggle
+const subscriptionRadios = document.querySelectorAll('input[name="subscription"]');
+const subscriptionOptions = document.querySelectorAll('.subscription-option');
 
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-
-        nums.forEach((el) => {
-          if (started.has(el)) return;
-          started.add(el);
-          const n = Number(el.getAttribute("data-count") || "0");
-          animateCount(el, n);
+subscriptionRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+        // Remove active class from all options
+        subscriptionOptions.forEach(option => {
+            option.classList.remove('active');
         });
+        
+        // Add active class to parent of checked radio
+        const parentOption = radio.closest('.subscription-option');
+        if (parentOption) {
+            parentOption.classList.add('active');
+        }
+        
+        // Update Add to Cart link
+        updateAddToCartLink();
+    });
+});
 
-        io.disconnect();
-      });
-    },
-    { threshold: 0.35 }
-  );
-
-  io.observe(statsBand);
+// Dynamic Add to Cart Link
+function updateAddToCartLink() {
+    const addToCartBtn = document.querySelector('.btn-full');
+    if (!addToCartBtn) return;
+    
+    // Get selected subscription type
+    const subscriptionType = document.querySelector('input[name="subscription"]:checked');
+    const subscription = subscriptionType ? subscriptionType.id : 'single';
+    
+    let cartUrl = 'https://example.com/cart?';
+    
+    if (subscription === 'single') {
+        // Single Subscription - get fragrance selection
+        const fragrance = document.querySelector('input[name="fragrance"]:checked');
+        const fragranceValue = fragrance ? fragrance.value : 'original';
+        
+        cartUrl += `type=single&fragrance=${fragranceValue}`;
+        
+    } else if (subscription === 'double') {
+        // Double Subscription - get both fragrance selections
+        const fragrance1 = document.querySelector('input[name="fragrance1"]:checked');
+        const fragrance2 = document.querySelector('input[name="fragrance2"]:checked');
+        
+        const frag1Value = fragrance1 ? fragrance1.value : 'original';
+        const frag2Value = fragrance2 ? fragrance2.value : 'original';
+        
+        cartUrl += `type=double&fragrance1=${frag1Value}&fragrance2=${frag2Value}`;
+    }
+    
+    // Update button to be a link
+    addToCartBtn.onclick = function() {
+        window.location.href = cartUrl;
+        console.log('Add to Cart URL:', cartUrl);
+        return false;
+    };
+    
+    // Log current selection for debugging
+    console.log('Current Add to Cart URL:', cartUrl);
 }
 
-// footer year + newsletter demo
-const year = document.getElementById("year");
-if (year) year.textContent = String(new Date().getFullYear());
+// Fragrance Selection Handlers
+const fragranceRadios = document.querySelectorAll('input[name="fragrance"], input[name="fragrance1"], input[name="fragrance2"]');
 
-document.getElementById("newsletter")?.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const input = document.getElementById("newsEmail");
-  if (input && input.value) {
-    input.value = "";
-  }
+fragranceRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+        updateAddToCartLink();
+    });
+});
+
+// Initialize Add to Cart link on page load
+document.addEventListener('DOMContentLoaded', () => {
+    updateAddToCartLink();
+});
+
+// Accordion
+const accordionItems = document.querySelectorAll('.accordion-item');
+
+accordionItems.forEach(item => {
+    const header = item.querySelector('.accordion-header');
+    const icon = header.querySelector('.accordion-icon');
+    
+    header.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+        
+        // Close all items and reset icons
+        accordionItems.forEach(i => {
+            i.classList.remove('active');
+            const otherIcon = i.querySelector('.accordion-icon');
+            if (otherIcon) otherIcon.textContent = '+';
+        });
+        
+        // Open clicked item if it wasn't active
+        if (!isActive) {
+            item.classList.add('active');
+            if (icon) icon.textContent = '−';
+        }
+    });
+});
+
+// Stats Counter Animation
+function animateCounter(element, target) {
+    const duration = 1500;
+    const start = 0;
+    const increment = target / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.textContent = target + '%';
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(current) + '%';
+        }
+    }, 16);
+}
+
+// Intersection Observer for stats
+const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const statElements = entry.target.querySelectorAll('.stat-percentage');
+            statElements.forEach(stat => {
+                const target = parseInt(stat.dataset.target);
+                animateCounter(stat, target);
+            });
+            statsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.5 });
+
+const statsBand = document.querySelector('.stats-band');
+if (statsBand) {
+    statsObserver.observe(statsBand);
+}
+
+// Newsletter Form
+const newsletterForm = document.getElementById('newsletterForm');
+
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = newsletterForm.querySelector('input[type="email"]');
+        
+        if (input && input.value) {
+            alert('Thank you for subscribing!');
+            input.value = '';
+        }
+    });
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        
+        e.preventDefault();
+        const target = document.querySelector(href);
+        
+        if (target) {
+            const headerOffset = 80;
+            const elementPosition = target.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+            
+            // Close mobile menu if open
+            if (mainNav) {
+                mainNav.classList.remove('active');
+            }
+            if (mobileMenuBtn) {
+                mobileMenuBtn.classList.remove('active');
+            }
+        }
+    });
+});
+
+// Add scroll effect to header
+let lastScroll = 0;
+const header = document.querySelector('.header');
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    
+    if (currentScroll > 100) {
+        header?.classList.add('scrolled');
+    } else {
+        header?.classList.remove('scrolled');
+    }
+    
+    lastScroll = currentScroll;
 });
