@@ -29,11 +29,11 @@ const galleryDots = document.getElementById("galleryDots");
 const galleryThumbs = document.getElementById("galleryThumbs");
 
 const galleryItems = [
-  { label: "Bottle 1", src: "assets/images/product-01.svg", alt: "GTG perfume bottle - view 1" },
-  { label: "Bottle 2", src: "assets/images/product-02.svg", alt: "GTG perfume bottle - view 2" },
-  { label: "Bottle 3", src: "assets/images/product-03.svg", alt: "GTG perfume bottle - view 3" },
-  { label: "Bottle 4", src: "assets/images/product-04.svg", alt: "GTG perfume bottle - view 4" },
-  { label: "Bottle 5", src: "assets/images/product-05.svg", alt: "GTG perfume bottle - view 5" },
+  { label: "Bottle 1", src: "assets/images/product-01.png", alt: "GTG perfume bottle - view 1" },
+  { label: "Bottle 2", src: "assets/images/product-02.jpg", alt: "GTG perfume bottle - view 2" },
+  { label: "Bottle 3", src: "assets/images/product-03.jpg", alt: "GTG perfume bottle - view 3" },
+  { label: "Bottle 4", src: "assets/images/product-04.jpg", alt: "GTG perfume bottle - view 4" },
+  { label: "Bottle 5", src: "assets/images/product-05.jpg", alt: "GTG perfume bottle - view 5" },
 ];
 
 let galleryIndex = 0;
