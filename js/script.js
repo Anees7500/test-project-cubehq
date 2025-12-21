@@ -110,6 +110,7 @@ swatches.forEach(swatch => {
     });
 });
 
+
 // Subscription Toggle
 const subscriptionRadios = document.querySelectorAll('input[name="subscription"]');
 const subscriptionOptions = document.querySelectorAll('.subscription-option');
